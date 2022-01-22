@@ -15,6 +15,7 @@ const app = {
             axios.post(`${this.url}/admin/signin`,this.userInfo)
                 .then(res => {
                     const { token, expired } = res.data;
+                    console.log(token);
                     document.cookie = `loginToken = ${token}; expires=${new Date(expired)};`;
                     //redirect to product (homepage)
                     window.location.href = 'productList.html'
@@ -22,7 +23,7 @@ const app = {
                 .catch(error => {
                     console.log(error.data)
                     alert(error.data.message)
-                } )
+                })
         }
     }
 }
