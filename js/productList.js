@@ -1,5 +1,7 @@
 // 產品資料格式
 
+let productModal = {};
+let delProductModal = {};
 
 const app = {
     data(){
@@ -7,7 +9,10 @@ const app = {
            url: 'https://vue3-course-api.hexschool.io/v2',
            path: 'kevinchang',
            products: [],
-           tmpProduct: {}
+           tmpProduct: {
+               imagesUrl: [],
+           },
+           isNew: false,
         }
     },
 
@@ -39,13 +44,58 @@ const app = {
       } ,
       changeState(item) {
           item.is_enabled = !item.is_enabled;
+      },
+      openModal(status, product){
+        if(status == 'isNew') {
+            this.tmpProduct = {
+                imagesUrl: [],
+            }
+            productModal.show();
+            this.isNew = true;
+        }else if (status == 'edit'){
+            this.tmpProduct = { ...product }
+            productModal.show();
+            this.isNew = false;
+        }else if (status == 'delete'){
+            delProductModal.show();
+            this.tmpProduct = { ...product }
+        }   
+      },
+      updateProduct(){
+        let url = `${this.url}/api/${this.path}/admin/product`;
+        let method = 'post';
+
+        if(!this.isNew){
+            url = `${this.url}/api/${this.path}/admin/product/${this.tmpProduct.id}`;
+            method = 'put';
+        }
+
+        axios[method](url, { data: this.tmpProduct })
+            .then(res=>{
+                console.log(res);
+                this.getAllProducts();
+                productModal.hide();
+            })
+      },
+      delProduct(){
+        let url = `${this.url}/api/${this.path}/admin/product/${this.tmpProduct.id}`;
+        axios.delete(url)
+            .then(res=>{
+                console.log(res);
+                this.getAllProducts();
+                delProductModal.hide();
+            })
       }
     },
 
-    created() {
+    mounted() {
       const token = document.cookie.replace(/(?:(?:^|.*;\s*)loginToken\s*\=\s*([^;]*).*$)|^.*$/, "$1");
       axios.defaults.headers.common['Authorization'] = token;
       this.checkLogin();
+
+      productModal = new bootstrap.Modal(document.getElementById('productModal'));
+      delProductModal = new bootstrap.Modal(document.getElementById('delProductModal'));
+
     } 
 }
 
